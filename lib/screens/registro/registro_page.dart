@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'ips/ips_menu_page.dart';
 import 'variables_page.dart';
 
 class RegistroPage extends StatefulWidget {
@@ -160,13 +160,29 @@ class _RegistroPageState extends State<RegistroPage> {
 
         return InkWell(
           onTap: () {
+            print(maquinaSeleccionada);
+            print(maquinas);
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => VariablesPage(
-                  maquinaId: maquina['id'],
-                  maquinaNombre: maquina['nombre'],
-                ),
+                builder: (_) {
+                    final nombre =
+                        maquina['nombre']
+                            .toString()
+                            .toUpperCase();
+                    if (nombre == 'IPS-1' ||
+                        nombre == 'IPS-2') {
+                      return IpsMenuPage(
+                        maquinaId: maquina['id'],
+                        maquinaNombre: maquina['nombre'],
+                      );
+                    }
+
+                        return VariablesPage(
+                          maquinaId: maquina['id'],
+                          maquinaNombre: maquina['nombre'],
+                        );
+                      },
               ),
             );
           },
