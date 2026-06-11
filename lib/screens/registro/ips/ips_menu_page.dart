@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'ips_datos_generales_page.dart';
-
+import 'ips_variables_page.dart';
+import 'ips_seccion_page.dart';
 class IpsMenuPage extends StatelessWidget {
   final int maquinaId;
   final String maquinaNombre;
@@ -50,6 +51,12 @@ class IpsMenuPage extends StatelessWidget {
 
             _modulo(
               context,
+              "Temperaturas Tornillo",
+              Icons.device_thermostat,
+            ),
+
+            _modulo(
+              context,
               "Inyector",
               Icons.speed,
             ),
@@ -81,28 +88,29 @@ class IpsMenuPage extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
 
-        onTap: () {
-          if (titulo == "Datos Generales") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => IpsDatosGeneralesPage(
-                  maquinaId: maquinaId,
-                  maquinaNombre: maquinaNombre,
-                ),
-              ),
-            );
-            return;
-          }
+                  onTap: () {
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '$titulo (Próximamente)',
-              ),
-            ),
-          );
-        },
+                    String seccion = titulo;
+
+                    if (titulo == "Ciclo") {
+                      seccion = "Ciclo Estándar";
+                    }
+
+                    if (titulo == "Tornillo") {
+                      seccion = "Tornillo";
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => IpsSeccionPage(
+                          maquinaId: maquinaId,
+                          maquinaNombre: maquinaNombre,
+                          seccion: seccion,
+                        ),
+                      ),
+                    );
+                  },
 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

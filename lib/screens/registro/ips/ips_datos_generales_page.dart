@@ -55,8 +55,61 @@ class _IpsDatosGeneralesPageState
 
     return 3;
   }
+  bool validarCampos() {
+  return aceiteController.text.isNotEmpty &&
+      aguaEntradaController.text.isNotEmpty &&
+      aguaManoController.text.isNotEmpty &&
+      aguaMoldeController.text.isNotEmpty &&
+      dewPointController.text.isNotEmpty &&
+      secadorController.text.isNotEmpty &&
+      materialController.text.isNotEmpty;
+}
+                Color obtenerColor(
+                  TextEditingController controller,
+                  double minimo,
+                  double maximo,
+                ) {
+                  if (controller.text.isEmpty) {
+                    return Colors.white;
+                  }
 
+                  final valor = double.tryParse(
+                    controller.text.replaceAll(',', '.'),
+                  );
+
+                  if (valor == null) {
+                    return Colors.white;
+                  }
+
+                  if (valor >= minimo && valor <= maximo) {
+                    return Colors.green.shade100;
+                  }
+
+                  return Colors.red.shade100;
+                }
   Future<void> guardarDatos() async {
+          final usuario = supabase.auth.currentUser;
+
+                if (usuario == null) {
+                  throw Exception('Usuario no autenticado');
+                }
+                final perfil = await supabase
+                    .from('perfiles')
+                    .select()
+                    .eq('id', usuario.id)
+                    .single();
+
+                final nombreUsuario = perfil['nombre'];
+          if (!validarCampos()) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Debe completar todos los campos',
+                ),
+              ),
+            );
+            return;
+          }
     try {
       setState(() {
         guardando = true;
@@ -69,7 +122,8 @@ class _IpsDatosGeneralesPageState
                 DateTime.now().toIso8601String().substring(0, 10),
             'turno': obtenerTurno(),
             'maquina_id': widget.maquinaId,
-            'creado_por': 'Operador',
+            'creado_por': nombreUsuario,
+            'usuario_id': usuario.id,
             'fecha_hora':
                 DateTime.now().toIso8601String(),
           })
@@ -162,49 +216,64 @@ class _IpsDatosGeneralesPageState
     });
   }
 
-  Widget campo(
-    String titulo,
-    String unidad,
-    TextEditingController controller,
-  ) {
-    return Card(
-      elevation: 4,
-      margin: const EdgeInsets.all(6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Text(
-              titulo,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
+Widget campo(
+  String titulo,
+  String unidad,
+  TextEditingController controller,
+  double minimo,
+  double maximo,
+) {
+  return Card(
+    elevation: 4,
+    margin: const EdgeInsets.all(6),
+    child: Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: controller,
+
+            onChanged: (_) {
+              setState(() {});
+            },
+
+            keyboardType:
+                const TextInputType.numberWithOptions(
+              decimal: true,
             ),
 
-            const SizedBox(height: 8),
+            decoration: InputDecoration(
+              prefixText: '$unidad ',
+              hintText: '0.0',
 
-            TextField(
-              controller: controller,
-              keyboardType:
-                  const TextInputType.numberWithOptions(
-                decimal: true,
+              filled: true,
+
+              fillColor: obtenerColor(
+                controller,
+                minimo,
+                maximo,
               ),
-              decoration: InputDecoration(
-                prefixText: '$unidad ',
-                hintText: '0.0',
-                border:
-                    const OutlineInputBorder(),
-                isDense: true,
-              ),
+
+              border: const OutlineInputBorder(),
+              isDense: true,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -227,42 +296,56 @@ class _IpsDatosGeneralesPageState
                   'Temperatura Aceite',
                   '°C',
                   aceiteController,
+                  35,
+                  60,
                 ),
 
                 campo(
                   'Temperatura Agua Entrada Máquina',
                   '°C',
                   aguaEntradaController,
+                  5,
+                  20,
                 ),
 
                 campo(
                   'Temperatura Agua Mano Toma',
                   '°C',
                   aguaManoController,
+                  5,
+                  20,
                 ),
 
                 campo(
                   'Temperatura Agua Molde',
                   '°C',
                   aguaMoldeController,
+                  5,
+                  20,
                 ),
 
                 campo(
                   'Dew Point Secador',
                   '°C',
                   dewPointController,
+                  -50,
+                  -10,
                 ),
 
                 campo(
                   'Temperatura Secador',
                   '°C',
                   secadorController,
+                  150,
+                  190,
                 ),
 
                 campo(
                   'Temperatura Entrada Material',
                   '°C',
                   materialController,
+                  20,
+                  350,
                 ),
               ],
             ),

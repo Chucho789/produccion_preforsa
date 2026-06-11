@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import '../historial/historial_page.dart';  
 import '../registro/registro_page.dart';
 import '../graficos/graficos_page.dart';
 import '../reportes/reportes_page.dart';
@@ -170,6 +170,13 @@ class _HomePageState extends State<HomePage> {
                           icon: Icons.edit_note,
                           titulo: 'Registro',
                           pagina: const RegistroPage(),
+                        ),
+
+                        _menuCard(
+                          context,
+                          icon: Icons.history,
+                          titulo: 'Historial',
+                          pagina: const HistorialPage(),
                         ),
 
                         _menuCard(
