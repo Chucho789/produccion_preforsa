@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'ips_datos_generales_page.dart';
-import 'ips_variables_page.dart';
 import 'ips_seccion_page.dart';
 class IpsMenuPage extends StatelessWidget {
   final int maquinaId;
