@@ -25,6 +25,12 @@ class _RegistroPageState extends State<RegistroPage> {
   'VJ2': 'assets/maquinas/SD-02.jpg',
   'VJ3': 'assets/maquinas/SD-03.jpg',
 };
+  final Map<String, String> imagenesAreas = {
+    'INYECCION': 'assets/Áreas/Inyeccion.jpg',
+    'TAPAS': 'assets/Áreas/Tapas.jpg',
+    'SOPLADO': 'assets/Áreas/soplado1.jpg',
+    'I5': 'assets/Áreas/i5.jpg',
+  };
 
   List<dynamic> areas = [];
   List<dynamic> maquinas = [];
@@ -119,26 +125,90 @@ class _RegistroPageState extends State<RegistroPage> {
 
             const SizedBox(height: 25),
 
-            DropdownButtonFormField<int>(
-              decoration: const InputDecoration(
-                labelText: 'Área',
-                border: OutlineInputBorder(),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: areas.length,
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 2.5,
               ),
-              value: areaSeleccionada,
-              items: areas.map((area) {
-                return DropdownMenuItem<int>(
-                  value: area['id'],
-                  child: Text(area['nombre']),
+              itemBuilder: (context, index) {
+                final area = areas[index];
+
+                final seleccionada =
+                    areaSeleccionada == area['id'];
+
+                return InkWell(
+                  onTap: () {
+
+                    setState(() {
+                      areaSeleccionada = area['id'];
+                    });
+
+                    cargarMaquinas(area['id']);
+                  },
+
+                  child: Card(
+  elevation: seleccionada ? 10 : 4,
+  clipBehavior: Clip.antiAlias,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(15),
+  ),
+  child: Stack(
+    fit: StackFit.expand,
+    children: [
+
+      Image.asset(
+        imagenesAreas[
+                area['nombre']
+                    .toString()
+                    .toUpperCase()] ??
+            'assets/areas/inyeccion.jpg',
+        fit: BoxFit.cover,
+      ),
+
+      Container(
+        color: seleccionada
+            ? Colors.blue.withOpacity(0.45)
+            : Colors.black.withOpacity(0.35),
+      ),
+
+      Center(
+                        child: Text(
+                          area['nombre'],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 6,
+                                color: Colors.black,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      if (seleccionada)
+                        const Positioned(
+                          right: 10,
+                          top: 10,
+                          child: Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
                 );
-              }).toList(),
-              onChanged: (value) {
-                if (value == null) return;
-
-                setState(() {
-                  areaSeleccionada = value;
-                });
-
-                cargarMaquinas(value);
               },
             ),
 
