@@ -258,145 +258,109 @@ return Colors.red.shade100;
 
 List<Widget> construirSecciones() {
 
-  final Map<String, List<dynamic>> grupos = {};
+  return [
 
-  for (final variable in variables) {
+    GridView.builder(
+      shrinkWrap: true,
+      physics:
+          const NeverScrollableScrollPhysics(),
 
-    final subseccion =
-        (variable['subseccion'] ?? '')
-            .toString()
-            .trim();
+      itemCount: variables.length,
 
-    final clave =
-        subseccion.isEmpty
-            ? 'General'
-            : subseccion;
-
-    grupos.putIfAbsent(
-      clave,
-      () => [],
-    );
-
-    grupos[clave]!.add(variable);
-  }
-
-  return grupos.entries.map((grupo) {
-
-    return Card(
-      margin: const EdgeInsets.only(
-        bottom: 12,
+      gridDelegate:
+          const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.2,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
       ),
 
-      child: ExpansionTile(
-        title: Text(
-          grupo.key,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+      itemBuilder: (context, index) {
 
-        children: [
+        final variable =
+            variables[index];
 
-          Padding(
-            padding: const EdgeInsets.all(12),
+        final controller =
+            controllers[
+                variable['variable_id']]!;
 
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics:
-                  const NeverScrollableScrollPhysics(),
+        return StatefulBuilder(
+          builder:
+              (context, setCardState) {
 
-              itemCount: grupo.value.length,
-
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 1.2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+            return Card(
+              color: obtenerColor(
+                controller,
+                (variable['valor_min'] ?? 0)
+                    .toDouble(),
+                (variable['valor_max'] ?? 0)
+                    .toDouble(),
               ),
 
-              itemBuilder: (context, index) {
+              child: Padding(
+                padding:
+                    const EdgeInsets.all(12),
 
-                final variable =
-                    grupo.value[index];
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
 
-                final controller =
-                    controllers[
-                        variable['variable_id']]!;
+                  children: [
 
-                return StatefulBuilder(
-                  builder:
-                      (context, setCardState) {
+                    Text(
+                      variable[
+                          'variable_nombre'],
 
-                    return Card(
-                      color: obtenerColor(
-                        controller,
-                        (variable['valor_min'] ?? 0)
-                            .toDouble(),
-                        (variable['valor_max'] ?? 0)
-                            .toDouble(),
+                      style:
+                          const TextStyle(
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(
+                      height: 10,
+                    ),
+
+                    TextField(
+                      controller:
+                          controller,
+
+                      onChanged: (_) {
+                        setCardState(() {});
+                      },
+
+                      keyboardType:
+                          const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
 
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.all(12),
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
 
-                        child: Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-
-                          children: [
-
-                            Text(
-                              variable[
-                                  'variable_nombre'],
-
-                              style:
-                                  const TextStyle(
-                                fontWeight:
-                                    FontWeight.bold,
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: Center(
+                            widthFactor: 1,
+                            child: Text(
+                              variable['unidad'] ?? '',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-
-                            const SizedBox(
-                              height: 10,
-                            ),
-
-                            TextField(
-                              controller:
-                                  controller,
-
-                              onChanged: (_) {
-                                setCardState(() {});
-                              },
-
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-
-                              decoration:
-                                  InputDecoration(
-                                border:
-                                    const OutlineInputBorder(),
-
-                                suffixText:
-                                    variable['unidad'],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }).toList();
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ),
+  ];
 }
 
 @override
@@ -420,6 +384,7 @@ body: Column(
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: construirSecciones(),
+        
       ),
     ),
 

@@ -200,141 +200,278 @@ class _VariablesPageState extends State<VariablesPage> {
           ),
         ),
         children: [
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics:
-                  const NeverScrollableScrollPhysics(),
-
-              itemCount: entry.value.length,
-
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 1.5,
-              ),
-
-              itemBuilder: (context, index) {
-                final variable =
-                    entry.value[index];
-
-                final variableId =
-                    variable['variable_id'];
-
-                final controller =
-                    controllers[variableId]!;
-
-                final min =
-                    (variable['valor_min'] ?? 0)
-                        .toDouble();
-
-                final max =
-                    (variable['valor_max'] ?? 0)
-                        .toDouble();
-
-                return StatefulBuilder(
-                  builder:
-                      (context, actualizar) {
-                    return Container(
-                      padding:
-                          const EdgeInsets.all(8),
-
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color:
-                              Colors.grey.shade300,
-                        ),
-
-                        borderRadius:
-                            BorderRadius.circular(
-                                12),
-                      ),
-
-                      child: Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
-
-                        children: [
-                          Text(
-                            variable[
-                                'variable_nombre'],
-
-                            textAlign:
-                                TextAlign.center,
-
-                            maxLines: 2,
-
-                            overflow:
-                                TextOverflow.ellipsis,
-
-                            style:
-                                const TextStyle(
-                              fontSize: 12,
-                              fontWeight:
-                                  FontWeight.bold,
-                            ),
-                          ),
-
-                          const SizedBox(
-                              height: 8),
-
-                          TextFormField(
-                            controller:
-                                controller,
-
-                            textAlign:
-                                TextAlign.center,
-
-                            keyboardType:
-                                const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-
-                            onChanged: (_) {
-                              actualizar(() {});
-                            },
-
-                            decoration:
-                                InputDecoration(
-                              isDense: true,
-
-                              hintText:
-                                  variable['unidad'],
-
-                              border:
-                                  const OutlineInputBorder(),
-                            ),
-                          ),
-
-                          const SizedBox(
-                              height: 6),
-
-                          CircleAvatar(
-                            radius: 8,
-
-                            backgroundColor:
-                                obtenerColorSemaforo(
-                              controller.text,
-                              min,
-                              max,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+          ...construirSubsecciones(
+            entry.value,
           ),
         ],
       ),
     );
   }).toList();
 }
+
+List<Widget> construirSubsecciones(
+    List<dynamic> variablesSeccion) {
+
+  final Map<String, List<dynamic>> subsecciones = {};
+
+  for (final variable in variablesSeccion) {
+
+    final subseccion =
+        (variable['subseccion'] ?? '')
+            .toString()
+            .trim();
+
+    if (subseccion.isEmpty) {
+      continue;
+    }
+
+    subsecciones.putIfAbsent(
+      subseccion,
+      () => [],
+    );
+
+    subsecciones[subseccion]!.add(variable);
+  }
+
+print(
+  'SUBSECCIONES ENCONTRADAS: ${subsecciones.keys.toList()}'
+);
+
+if (subsecciones.isEmpty) {
+
+  return [
+    Padding(
+      padding: const EdgeInsets.all(10),
+
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+
+        children: variablesSeccion.map((variable) {
+
+          final variableId =
+              variable['variable_id'];
+
+          final controller =
+              controllers[variableId]!;
+
+          final min =
+              (variable['valor_min'] ?? 0)
+                  .toDouble();
+
+          final max =
+              (variable['valor_max'] ?? 0)
+                  .toDouble();
+
+          return SizedBox(
+            width: 160,
+
+            child: Container(
+              padding:
+                  const EdgeInsets.all(8),
+
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color:
+                      Colors.grey.shade300,
+                ),
+
+                borderRadius:
+                    BorderRadius.circular(12),
+              ),
+
+              child: Column(
+                mainAxisSize:
+                    MainAxisSize.min,
+
+                children: [
+
+                  Text(
+                    variable[
+                        'variable_nombre'],
+                    textAlign:
+                        TextAlign.center,
+                    style:
+                        const TextStyle(
+                      fontSize: 12,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(
+                      height: 8),
+
+                  TextFormField(
+                    controller:
+                        controller,
+                    textAlign:
+                        TextAlign.center,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                  ),
+
+                  const SizedBox(
+                      height: 6),
+
+                  CircleAvatar(
+                    radius: 8,
+                    backgroundColor:
+                        obtenerColorSemaforo(
+                      controller.text,
+                      min,
+                      max,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    ),
+  ];
+}
+
+  return subsecciones.entries.map((subgrupo) {
+
+    return ExpansionTile(
+      title: Text(
+        subgrupo.key,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(10),
+
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics:
+                const NeverScrollableScrollPhysics(),
+
+            itemCount: subgrupo.value.length,
+
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.9,
+            ),
+
+            itemBuilder: (context, index) {
+
+              final variable =
+                  subgrupo.value[index];
+
+              final variableId =
+                  variable['variable_id'];
+
+              final controller =
+                  controllers[variableId]!;
+
+              final min =
+                  (variable['valor_min'] ?? 0)
+                      .toDouble();
+
+              final max =
+                  (variable['valor_max'] ?? 0)
+                      .toDouble();
+
+              return StatefulBuilder(
+                builder:
+                    (context, actualizar) {
+
+                  return Container(
+                    padding:
+                        const EdgeInsets.all(8),
+
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color:
+                            Colors.grey.shade300,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
+
+                    child: Column(
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
+
+                      children: [
+
+                        Text(
+                          variable[
+                              'variable_nombre'],
+                          textAlign:
+                              TextAlign.center,
+                          maxLines: 2,
+                          overflow:
+                              TextOverflow.ellipsis,
+                          style:
+                              const TextStyle(
+                            fontSize: 12,
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(
+                            height: 8),
+
+                        TextFormField(
+                          controller:
+                              controller,
+                          textAlign:
+                              TextAlign.center,
+                          keyboardType:
+                              const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          onChanged: (_) {
+                            actualizar(() {});
+                          },
+                          decoration:
+                              InputDecoration(
+                            isDense: true,
+                            hintText:
+                                variable['unidad'],
+                            border:
+                                const OutlineInputBorder(),
+                          ),
+                        ),
+
+                        const SizedBox(
+                            height: 6),
+
+                        CircleAvatar(
+                          radius: 8,
+                          backgroundColor:
+                              obtenerColorSemaforo(
+                            controller.text,
+                            min,
+                            max,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }).toList();
+}
+
   @override
   Widget build(BuildContext context) {
     if (cargando) {
