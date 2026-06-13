@@ -256,6 +256,149 @@ return Colors.red.shade100;
 
 }
 
+List<Widget> construirSecciones() {
+
+  final Map<String, List<dynamic>> grupos = {};
+
+  for (final variable in variables) {
+
+    final subseccion =
+        (variable['subseccion'] ?? '')
+            .toString()
+            .trim();
+
+    final clave =
+        subseccion.isEmpty
+            ? 'General'
+            : subseccion;
+
+    grupos.putIfAbsent(
+      clave,
+      () => [],
+    );
+
+    grupos[clave]!.add(variable);
+  }
+
+  return grupos.entries.map((grupo) {
+
+    return Card(
+      margin: const EdgeInsets.only(
+        bottom: 12,
+      ),
+
+      child: ExpansionTile(
+        title: Text(
+          grupo.key,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        children: [
+
+          Padding(
+            padding: const EdgeInsets.all(12),
+
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics:
+                  const NeverScrollableScrollPhysics(),
+
+              itemCount: grupo.value.length,
+
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.2,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+
+              itemBuilder: (context, index) {
+
+                final variable =
+                    grupo.value[index];
+
+                final controller =
+                    controllers[
+                        variable['variable_id']]!;
+
+                return StatefulBuilder(
+                  builder:
+                      (context, setCardState) {
+
+                    return Card(
+                      color: obtenerColor(
+                        controller,
+                        (variable['valor_min'] ?? 0)
+                            .toDouble(),
+                        (variable['valor_max'] ?? 0)
+                            .toDouble(),
+                      ),
+
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.all(12),
+
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+
+                          children: [
+
+                            Text(
+                              variable[
+                                  'variable_nombre'],
+
+                              style:
+                                  const TextStyle(
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(
+                              height: 10,
+                            ),
+
+                            TextField(
+                              controller:
+                                  controller,
+
+                              onChanged: (_) {
+                                setCardState(() {});
+                              },
+
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+
+                              decoration:
+                                  InputDecoration(
+                                border:
+                                    const OutlineInputBorder(),
+
+                                suffixText:
+                                    variable['unidad'],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }).toList();
+}
+
 @override
 Widget build(BuildContext context) {
 
@@ -273,75 +416,10 @@ return Scaffold(
   ),
 body: Column(
   children: [
-
     Expanded(
-      child: GridView.builder(
+      child: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: variables.length,
-        gridDelegate:
-            const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 1.2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemBuilder: (context, index) {
-
-          final variable = variables[index];
-
-          final controller =
-              controllers[variable['variable_id']]!;
-
-          return StatefulBuilder(
-            builder: (context, setCardState) {
-              return Card(
-                color: obtenerColor(
-                  controller,
-                  (variable['valor_min'] ?? 0).toDouble(),
-                  (variable['valor_max'] ?? 0).toDouble(),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-
-                      Text(
-                        variable['variable_nombre'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      TextField(
-                        controller: controller,
-
-                        onChanged: (_) {
-                          setCardState(() {});
-                        },
-
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-
-                        decoration: InputDecoration(
-                          border:
-                              const OutlineInputBorder(),
-                          suffixText:
-                              variable['unidad'],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+        children: construirSecciones(),
       ),
     ),
 

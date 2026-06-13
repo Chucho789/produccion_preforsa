@@ -26,10 +26,10 @@ class _RegistroPageState extends State<RegistroPage> {
   'VJ3': 'assets/maquinas/SD-03.jpg',
 };
   final Map<String, String> imagenesAreas = {
-    'INYECCION': 'assets/Áreas/Inyeccion.jpg',
-    'TAPAS': 'assets/Áreas/Tapas.jpg',
-    'SOPLADO': 'assets/Áreas/soplado1.jpg',
-    'I5': 'assets/Áreas/i5.jpg',
+    'INYECCION': 'assets/maquinas/areas/Inyeccion.jpg',
+    'TAPAS': 'assets/maquinas/areas/Tapas.jpg',
+    'SOPLADO': 'assets/maquinas/areas/soplado1.jpg',
+    'I5': 'assets/maquinas/areas/soplado2.jpg',
   };
 
   List<dynamic> areas = [];
@@ -167,7 +167,7 @@ class _RegistroPageState extends State<RegistroPage> {
                 area['nombre']
                     .toString()
                     .toUpperCase()] ??
-            'assets/areas/inyeccion.jpg',
+            'assets/maquinas/areas/Inyeccion.jpg',
         fit: BoxFit.cover,
       ),
 
@@ -183,7 +183,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 20,
+                            fontSize: 30,
                             fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
@@ -202,7 +202,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           child: Icon(
                             Icons.check_circle,
                             color: Colors.white,
-                            size: 28,
+                            size:40,
                           ),
                         ),
                     ],
@@ -212,7 +212,40 @@ class _RegistroPageState extends State<RegistroPage> {
               },
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
+
+            const Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    thickness: 1.5,
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                  ),
+                  child: Text(
+                    'MÁQUINAS',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: Divider(
+                    thickness: 1.5,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 15),
 
             if (maquinas.isNotEmpty)
   Expanded(
