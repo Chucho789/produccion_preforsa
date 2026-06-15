@@ -51,14 +51,12 @@ class _VariablesPageState extends State<VariablesPage> {
         controllers[variable['variable_id']] =
             TextEditingController();
       }
-
       setState(() {
         variables = data;
         cargando = false;
       });
     } catch (e) {
       debugPrint(e.toString());
-
       setState(() {
         cargando = false;
       });
@@ -67,15 +65,12 @@ class _VariablesPageState extends State<VariablesPage> {
 
   int obtenerTurnoNumero() {
     final hora = DateTime.now().hour;
-
     if (hora >= 7 && hora < 15) {
       return 1;
     }
-
     if (hora >= 15 && hora < 23) {
       return 2;
     }
-
     return 3;
   }
 
@@ -84,7 +79,6 @@ class _VariablesPageState extends State<VariablesPage> {
       setState(() {
         guardando = true;
       });
-
       final registro = await supabase
           .from('registros')
           .insert({
@@ -96,26 +90,19 @@ class _VariablesPageState extends State<VariablesPage> {
           })
           .select()
           .single();
-
       final registroId = registro['id'];
-
       for (var variable in variables) {
         final variableId = variable['variable_id'];
-
         final texto =
             controllers[variableId]?.text.trim() ?? '';
-
         if (texto.isEmpty) continue;
-
         await supabase.from('registro_detalle').insert({
           'registro_id': registroId,
           'variable_id': variableId,
           'valor': double.parse(texto),
         });
       }
-
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -123,13 +110,10 @@ class _VariablesPageState extends State<VariablesPage> {
           ),
         ),
       );
-
       Navigator.pop(context);
     } catch (e) {
       debugPrint(e.toString());
-
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -138,42 +122,46 @@ class _VariablesPageState extends State<VariablesPage> {
         ),
       );
     }
-
     setState(() {
       guardando = false;
     });
   }
 
-  Color obtenerColorSemaforo(
-    String texto,
-    double min,
-    double max,
-  ) {
-    if (texto.isEmpty) {
-      return Colors.grey;
-    }
-
-    final valor = double.tryParse(texto);
-
-    if (valor == null) {
-      return Colors.grey;
-    }
-
-    if (valor < min || valor > max) {
-      return Colors.red;
-    }
-
-    final rango = max - min;
-
-    final zonaAmarilla = rango * 0.10;
-
-    if (valor <= min + zonaAmarilla ||
-        valor >= max - zonaAmarilla) {
-      return Colors.orange;
-    }
-
-    return Colors.green;
+Color obtenerColorTarjeta(
+  String texto,
+  double min,
+  double max,
+) {
+  if (texto.isEmpty) {
+    return Colors.white;
   }
+
+  final valor = double.tryParse(texto);
+
+  if (valor == null) {
+    return Colors.white;
+  }
+
+  if (valor < min || valor > max) {
+    return Colors.red.shade200;
+  }
+
+  final rango = max - min;
+
+  if (rango <= 0) {
+    return Colors.green.shade200;
+  }
+
+  final zonaAmarilla = rango * 0.10;
+
+  if (
+      valor <= min + zonaAmarilla ||
+      valor >= max - zonaAmarilla) {
+    return Colors.yellow.shade200;
+  }
+
+  return Colors.green.shade200;
+}
   List<Widget> construirSecciones() {
   final Map<String, List<dynamic>> secciones = {};
 
@@ -211,81 +199,62 @@ class _VariablesPageState extends State<VariablesPage> {
 
 List<Widget> construirSubsecciones(
     List<dynamic> variablesSeccion) {
-
   final Map<String, List<dynamic>> subsecciones = {};
-
   for (final variable in variablesSeccion) {
-
     final subseccion =
         (variable['subseccion'] ?? '')
             .toString()
             .trim();
-
     if (subseccion.isEmpty) {
       continue;
     }
-
     subsecciones.putIfAbsent(
       subseccion,
       () => [],
     );
-
     subsecciones[subseccion]!.add(variable);
   }
-
-print(
-  'SUBSECCIONES ENCONTRADAS: ${subsecciones.keys.toList()}'
-);
-
 if (subsecciones.isEmpty) {
-
   return [
     Padding(
-      padding: const EdgeInsets.all(10),
-
+      padding: const EdgeInsets.all(6),
       child: Wrap(
         spacing: 10,
         runSpacing: 10,
-
         children: variablesSeccion.map((variable) {
-
           final variableId =
               variable['variable_id'];
-
           final controller =
               controllers[variableId]!;
-
           final min =
               (variable['valor_min'] ?? 0)
                   .toDouble();
-
           final max =
               (variable['valor_max'] ?? 0)
                   .toDouble();
-
           return SizedBox(
             width: 160,
 
             child: Container(
               padding:
-                  const EdgeInsets.all(8),
+                  const EdgeInsets.all(5),
 
               decoration: BoxDecoration(
-                border: Border.all(
-                  color:
-                      Colors.grey.shade300,
+                color: obtenerColorTarjeta(
+                  controller.text,
+                  min,
+                  max,
                 ),
-
+                border: Border.all(
+                  color: Colors.grey.shade300,
+                ),
                 borderRadius:
                     BorderRadius.circular(12),
               ),
-
               child: Column(
                 mainAxisSize:
                     MainAxisSize.min,
-
                 children: [
-
                   Text(
                     variable[
                         'variable_nombre'],
@@ -300,48 +269,49 @@ if (subsecciones.isEmpty) {
                   ),
 
                   const SizedBox(
-                      height: 8),
+                      height: 4),
 
-                  TextFormField(
-                      controller: controller,
-                      textAlign: TextAlign.center,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(
-                        decimal: true,
+                  SizedBox(
+                  height: 40,
+                  child: Stack(
+                    alignment: Alignment.centerRight,
+                    children: [
+
+                      TextFormField(
+                        controller: controller,
+                        textAlign: TextAlign.center,
+                        keyboardType:
+                            const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        onChanged: (_) {
+                            setState(() {});
+                          },
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                        ),
                       ),
 
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-
-                        suffixIconConstraints:
-                            const BoxConstraints(
-                          minWidth: 45,
-                        ),
-
-                        suffixIcon: Center(
+                      Padding(
+                        padding: const EdgeInsets.only(right: 25),
+                        child: IgnorePointer(
                           child: Text(
                             variable['unidad'] ?? '',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: Colors.black54,
                             ),
                           ),
                         ),
                       ),
-                    ),
-
-                  const SizedBox(
-                      height: 6),
-
-                  CircleAvatar(
-                    radius: 8,
-                    backgroundColor:
-                        obtenerColorSemaforo(
-                      controller.text,
-                      min,
-                      max,
-                    ),
+                    ],
                   ),
+                ),
                 ],
               ),
             ),
@@ -364,7 +334,7 @@ if (subsecciones.isEmpty) {
 
       children: [
         Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(5),
 
           child: GridView.builder(
             shrinkWrap: true,
@@ -375,10 +345,10 @@ if (subsecciones.isEmpty) {
 
             gridDelegate:
                 const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 0.9,
+              crossAxisCount: 3,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 5,
+              childAspectRatio: 1,
             ),
 
             itemBuilder: (context, index) {
@@ -410,16 +380,22 @@ if (subsecciones.isEmpty) {
 
                   return Container(
                     padding:
-                        const EdgeInsets.all(8),
+                        const EdgeInsets.all(5),
 
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color:
-                            Colors.grey.shade300,
+                        color: obtenerColorTarjeta(
+                          controller.text,
+                          min,
+                          max,
+                        ),
+
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                        ),
+
+                        borderRadius:
+                            BorderRadius.circular(15),
                       ),
-                      borderRadius:
-                          BorderRadius.circular(12),
-                    ),
 
                     child: Column(
                       mainAxisAlignment:
@@ -437,14 +413,14 @@ if (subsecciones.isEmpty) {
                               TextOverflow.ellipsis,
                           style:
                               const TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight:
                                 FontWeight.bold,
                           ),
                         ),
 
                         const SizedBox(
-                            height: 8),
+                            height: 2),
 
 
                           TextFormField(
@@ -465,23 +441,10 @@ if (subsecciones.isEmpty) {
                                 suffixStyle: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: Colors.black,
+                                  color: Color.fromARGB(255, 163, 156, 156),
                                 ),
                               ),
                             ),
-
-                        const SizedBox(
-                            height: 6),
-
-                        CircleAvatar(
-                          radius: 8,
-                          backgroundColor:
-                              obtenerColorSemaforo(
-                            controller.text,
-                            min,
-                            max,
-                          ),
-                        ),
                       ],
                     ),
                   );
@@ -534,7 +497,7 @@ if (subsecciones.isEmpty) {
             ),
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
         ],
       ),
     );
