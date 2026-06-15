@@ -303,15 +303,32 @@ if (subsecciones.isEmpty) {
                       height: 8),
 
                   TextFormField(
-                    controller:
-                        controller,
-                    textAlign:
-                        TextAlign.center,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(
-                      decimal: true,
+                      controller: controller,
+                      textAlign: TextAlign.center,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+
+                        suffixIconConstraints:
+                            const BoxConstraints(
+                          minWidth: 45,
+                        ),
+
+                        suffixIcon: Center(
+                          child: Text(
+                            variable['unidad'] ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
 
                   const SizedBox(
                       height: 6),
@@ -383,6 +400,10 @@ if (subsecciones.isEmpty) {
                   (variable['valor_max'] ?? 0)
                       .toDouble();
 
+              print(
+                  '${variable['variable_nombre']} -> ${variable['unidad']}'
+                );
+              
               return StatefulBuilder(
                 builder:
                     (context, actualizar) {
@@ -425,27 +446,29 @@ if (subsecciones.isEmpty) {
                         const SizedBox(
                             height: 8),
 
-                        TextFormField(
-                          controller:
-                              controller,
-                          textAlign:
-                              TextAlign.center,
-                          keyboardType:
-                              const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          onChanged: (_) {
-                            actualizar(() {});
-                          },
-                          decoration:
-                              InputDecoration(
-                            isDense: true,
-                            hintText:
-                                variable['unidad'],
-                            border:
-                                const OutlineInputBorder(),
-                          ),
-                        ),
+
+                          TextFormField(
+                              controller: controller,
+                              textAlign: TextAlign.center,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              onChanged: (_) {
+                                actualizar(() {});
+                              },
+                              decoration: InputDecoration(
+                                border: const OutlineInputBorder(),
+
+                                suffixText: variable['unidad'],
+
+                                suffixStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
 
                         const SizedBox(
                             height: 6),
@@ -493,104 +516,7 @@ if (subsecciones.isEmpty) {
         padding: const EdgeInsets.all(16),
         children: [
           ...construirSecciones(),
-          /*...variables.map((variable) {
-            final variableId = variable['variable_id'];
 
-            final controller =
-                controllers[variableId]!;
-
-            final min =
-                (variable['valor_min'] ?? 0)
-                    .toDouble();
-
-            final max =
-                (variable['valor_max'] ?? 0)
-                    .toDouble();
-
-            return StatefulBuilder(
-              builder: (context, actualizar) {
-                return Card(
-                  margin:
-                      const EdgeInsets.only(bottom: 12),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          variable['variable_nombre'],
-                          style:
-                              const TextStyle(
-                            fontSize: 16,
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-
-                        Text(
-                          'Rango: $min - $max ${variable['unidad']}',
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        Row(
-                          children: [
-                            Expanded(
-                              child: SizedBox(
-                                height: 55,
-                                child:
-                                    TextFormField(
-                                  controller:
-                                      controller,
-
-                                  keyboardType:
-                                      const TextInputType.numberWithOptions(
-                                    decimal:
-                                        true,
-                                  ),
-
-                                  onChanged: (_) {
-                                    actualizar(
-                                        () {});
-                                  },
-
-                                  decoration:
-                                      InputDecoration(
-                                    hintText:
-                                        variable[
-                                            'unidad'],
-                                    border:
-                                        const OutlineInputBorder(),
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(
-                                width: 12),
-
-                            CircleAvatar(
-                              radius: 12,
-                              backgroundColor:
-                                  obtenerColorSemaforo(
-                                controller.text,
-                                min,
-                                max,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            );
-          }),*/
 
           const SizedBox(height: 20),
 
