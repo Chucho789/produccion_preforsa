@@ -79,14 +79,29 @@ class _VariablesPageState extends State<VariablesPage> {
       setState(() {
         guardando = true;
       });
+
+      final usuario =
+          Supabase.instance.client.auth.currentUser;
+
+      final perfil = await supabase
+          .from('perfiles')
+          .select()
+          .eq('id', usuario!.id)
+          .single();
+
       final registro = await supabase
           .from('registros')
           .insert({
             'fecha':
                 DateTime.now().toIso8601String().substring(0, 10),
+
             'turno': obtenerTurnoNumero(),
+
             'maquina_id': widget.maquinaId,
-            'creado_por': 'Operador',
+
+            'usuario_id': usuario.id,
+
+            'creado_por': perfil['nombre'],
           })
           .select()
           .single();
@@ -94,12 +109,30 @@ class _VariablesPageState extends State<VariablesPage> {
       for (var variable in variables) {
         final variableId = variable['variable_id'];
         final texto =
-            controllers[variableId]?.text.trim() ?? '';
-        if (texto.isEmpty) continue;
-        await supabase.from('registro_detalle').insert({
+              controllers[variableId]?.text.trim() ?? '';
+
+          if (texto.isEmpty) {
+            throw Exception(
+              'Debe completar todas las variables.'
+            );
+          }
+        await supabase
+            .from('registro_detalle')
+            .insert({
+
           'registro_id': registroId,
+
           'variable_id': variableId,
-          'valor': double.parse(texto),
+
+          'valor':
+              texto == '-'
+                  ? null
+                  : double.parse(texto),
+
+          'valor_texto':
+              texto == '-'
+                  ? '-'
+                  : null,
         });
       }
       if (!mounted) return;
@@ -280,10 +313,7 @@ if (subsecciones.isEmpty) {
                       TextFormField(
                         controller: controller,
                         textAlign: TextAlign.center,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
+                        keyboardType: TextInputType.text,
                         onChanged: (_) {
                             setState(() {});
                           },
@@ -426,10 +456,7 @@ if (subsecciones.isEmpty) {
                           TextFormField(
                               controller: controller,
                               textAlign: TextAlign.center,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
+                              keyboardType: TextInputType.text,
                               onChanged: (_) {
                                 actualizar(() {});
                               },

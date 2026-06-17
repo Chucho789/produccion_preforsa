@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'detalle_registro_page.dart';
 
 class HistorialPage extends StatefulWidget {
   const HistorialPage({super.key});
@@ -27,13 +28,16 @@ class _HistorialPageState
   Future<void> cargarRegistros() async {
 
     final data = await supabase
-        .from('registros')
-        .select()
-        .order(
-          'fecha_hora',
-          ascending: false,
-        )
-        .limit(100);
+    .from('registros')
+    .select('''
+      *,
+      maquinas(nombre)
+    ''')
+    .order(
+      'fecha_hora',
+      ascending: false,
+    )
+    .limit(100);
 
     setState(() {
       registros = data;
@@ -72,22 +76,38 @@ class _HistorialPageState
                   ),
 
                   child: ListTile(
+
+                    onTap: () {
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => DetalleRegistroPage(
+                            registroId: registro['id'],
+                          ),
+                        ),
+                      );
+                    },
+
                     leading: const Icon(
                       Icons.fact_check,
                     ),
 
                     title: Text(
-                      registro['creado_por'] ??
-                          '',
+                      registro['maquinas']['nombre'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
 
                     subtitle: Text(
-                      'Turno ${registro['turno']}'
-                      '\n${registro['fecha_hora']}',
-                    ),
+                        'Registrado por: ${registro['creado_por']}'
+                        '\nTurno: ${registro['turno']}'
+                        '\nFecha: ${registro['fecha']}',
+                      ),
 
-                    trailing: Text(
-                      'Maq ${registro['maquina_id']}',
+                    trailing: const Icon(
+                      Icons.chevron_right,
                     ),
                   ),
                 );
