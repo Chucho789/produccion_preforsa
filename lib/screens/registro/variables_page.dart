@@ -4,11 +4,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class VariablesPage extends StatefulWidget {
   final int maquinaId;
   final String maquinaNombre;
-
+  final String? seccion;
   const VariablesPage({
     super.key,
     required this.maquinaId,
     required this.maquinaNombre,
+    this.seccion,ca
   });
 
   @override
@@ -41,12 +42,21 @@ class _VariablesPageState extends State<VariablesPage> {
 
   Future<void> cargarVariables() async {
     try {
-      final data = await supabase
-          .from('vw_variables_maquina')
-          .select()
-          .eq('maquina_id', widget.maquinaId)
-          .order('orden');
+      var query = supabase
+            .from('vw_variables_maquina')
+            .select()
+            .eq('maquina_id', widget.maquinaId);
 
+        if (widget.seccion != null) {
+          query = query.eq(
+            'seccion',
+            widget.seccion!,
+          );
+        }
+
+        final data = await query.order('orden');
+        for (final v in data) {
+        }
       for (var variable in data) {
         controllers[variable['variable_id']] =
             TextEditingController();
@@ -74,91 +84,161 @@ class _VariablesPageState extends State<VariablesPage> {
     return 3;
   }
 
-  Future<void> guardarRegistro() async {
-    try {
-      setState(() {
-        guardando = true;
-      });
+ Future<void> guardarRegistro() async {
 
-      final usuario =
-          Supabase.instance.client.auth.currentUser;
+  try {
+
+    // VALIDAR ANTES DE CREAR EL REGISTRO
+    for (var variable in variables) {
+
+      final variableId =
+          variable['variable_id'];
+
+      final texto =
+          controllers[variableId]
+              ?.text
+              .trim() ?? '';
+
+      if (texto.isEmpty) {
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Debe completar todas las variables',
+            ),
+          ),
+        );
+
+        return;
+      }
+    }
+
+    setState(() {
+      guardando = true;
+    });
+
+    final usuario =
+        supabase.auth.currentUser;
+
+    String nombreUsuario = 'Operador';
+
+    if (usuario != null) {
 
       final perfil = await supabase
           .from('perfiles')
-          .select()
-          .eq('id', usuario!.id)
-          .single();
+          .select('nombre')
+          .eq('id', usuario.id)
+          .maybeSingle();
 
-      final registro = await supabase
-          .from('registros')
-          .insert({
-            'fecha':
-                DateTime.now().toIso8601String().substring(0, 10),
-
-            'turno': obtenerTurnoNumero(),
-
-            'maquina_id': widget.maquinaId,
-
-            'usuario_id': usuario.id,
-
-            'creado_por': perfil['nombre'],
-          })
-          .select()
-          .single();
-      final registroId = registro['id'];
-      for (var variable in variables) {
-        final variableId = variable['variable_id'];
-        final texto =
-              controllers[variableId]?.text.trim() ?? '';
-
-          if (texto.isEmpty) {
-            throw Exception(
-              'Debe completar todas las variables.'
-            );
-          }
-        await supabase
-            .from('registro_detalle')
-            .insert({
-
-          'registro_id': registroId,
-
-          'variable_id': variableId,
-
-          'valor':
-              texto == '-'
-                  ? null
-                  : double.parse(texto),
-
-          'valor_texto':
-              texto == '-'
-                  ? '-'
-                  : null,
-        });
+      if (perfil != null) {
+        nombreUsuario =
+            perfil['nombre'];
       }
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Registro guardado correctamente',
-          ),
-        ),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      debugPrint(e.toString());
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error al guardar: $e',
-          ),
-        ),
-      );
     }
-    setState(() {
-      guardando = false;
-    });
+
+    final registro = await supabase
+        .from('registros')
+        .insert({
+
+          'fecha':
+              DateTime.now()
+                  .toIso8601String()
+                  .substring(0, 10),
+
+          'turno':
+              obtenerTurnoNumero(),
+
+          'maquina_id':
+              widget.maquinaId,
+
+          'usuario_id':
+              usuario?.id,
+
+          'creado_por':
+              nombreUsuario,
+
+          'fecha_hora':
+              DateTime.now()
+                  .toIso8601String(),
+        })
+        .select()
+        .single();
+
+    final registroId =
+        registro['id'];
+
+    for (var variable in variables) {
+
+      final variableId =
+          variable['variable_id'];
+
+      final texto =
+          controllers[variableId]
+              ?.text
+              .trim() ?? '';
+
+      await supabase
+          .from('registro_detalle')
+          .insert({
+
+        'registro_id':
+            registroId,
+
+        'variable_id':
+            variableId,
+
+        'valor':
+            texto == '-'
+                ? null
+                : double.parse(
+                    texto.replaceAll(',', '.'),
+                  ),
+
+        'valor_texto':
+            texto == '-'
+                ? '-'
+                : null,
+      });
+    }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Registro guardado correctamente',
+        ),
+      ),
+    );
+
+    Navigator.pop(context);
+
+  } catch (e) {
+
+    debugPrint(e.toString());
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(
+          'Error al guardar: $e',
+        ),
+      ),
+    );
+
+  } finally {
+
+    if (mounted) {
+      setState(() {
+        guardando = false;
+      });
+    }
   }
+}
 
 Color obtenerColorTarjeta(
   String texto,
@@ -238,6 +318,10 @@ List<Widget> construirSubsecciones(
         (variable['subseccion'] ?? '')
             .toString()
             .trim();
+            variablesSeccion.sort(
+  (a, b) => (a['orden'] ?? 0)
+      .compareTo(b['orden'] ?? 0),
+);
     if (subseccion.isEmpty) {
       continue;
     }
@@ -313,7 +397,10 @@ if (subsecciones.isEmpty) {
                       TextFormField(
                         controller: controller,
                         textAlign: TextAlign.center,
-                        keyboardType: TextInputType.text,
+                        keyboardType:
+                            const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         onChanged: (_) {
                             setState(() {});
                           },
@@ -353,7 +440,10 @@ if (subsecciones.isEmpty) {
 }
 
   return subsecciones.entries.map((subgrupo) {
-
+subgrupo.value.sort(
+    (a, b) => (a['orden'] ?? 0)
+        .compareTo(b['orden'] ?? 0),
+  );
     return ExpansionTile(
       title: Text(
         subgrupo.key,
@@ -456,7 +546,10 @@ if (subsecciones.isEmpty) {
                           TextFormField(
                               controller: controller,
                               textAlign: TextAlign.center,
-                              keyboardType: TextInputType.text,
+                              keyboardType:
+                                const TextInputType.numberWithOptions(
+                              decimal: true,
+                                ),
                               onChanged: (_) {
                                 actualizar(() {});
                               },

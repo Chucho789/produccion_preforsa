@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:produccion_preforsa/screens/registro/menu_secciones_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'ips/ips_menu_page.dart';
-import 'variables_page.dart';
+import 'menu_secciones_page.dart';
+
 
 class RegistroPage extends StatefulWidget {
   const RegistroPage({super.key});
@@ -281,7 +283,7 @@ class _RegistroPageState extends State<RegistroPage> {
                       );
                     }
 
-                        return VariablesPage(
+                        return MenuSeccionesPage(
                           maquinaId: maquina['id'],
                           maquinaNombre: maquina['nombre'],
                         );

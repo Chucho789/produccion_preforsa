@@ -106,58 +106,91 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   Card(
-                    elevation: 5,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          const CircleAvatar(
-                            radius: 35,
-                            child: Icon(
-                              Icons.person,
-                              size: 35,
-                            ),
-                          ),
+  elevation: 8,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Padding(
+    padding: const EdgeInsets.all(16),
+    child: Row(
+      children: [
+        // Lado izquierdo
+        const CircleAvatar(
+          radius: 35,
+          backgroundColor: Color(0xFFEDE7F6),
+          child: Icon(
+            Icons.engineering,
+            size: 40,
+            color: Colors.deepPurple,
+          ),
+        ),
 
-                          const SizedBox(height: 10),
+        const SizedBox(width: 15),
 
-                          Text(
-                            nombreUsuario,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+        // Nombre y rol
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                nombreUsuario,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
 
-                          const SizedBox(height: 5),
+              const SizedBox(height: 8),
 
-                          Chip(
-                            label: Text(rolUsuario),
-                          ),
+              Chip(
+                visualDensity: VisualDensity.compact,
+                label: Text(rolUsuario),
+              ),
+            ],
+          ),
+        ),
 
-                          const SizedBox(height: 15),
+        // Lado derecho
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                turno,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
 
-                          Text(
-                            turno,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+            const SizedBox(height: 6),
 
-                          const SizedBox(height: 5),
+            Text(
+              DateTime.now().toString().substring(0, 10),
+              style: TextStyle(
+                color: const Color.fromARGB(255, 0, 0, 0),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+),
 
-                          Text(
-                            DateTime.now()
-                                .toString()
-                                .substring(0, 10),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 10),
 
                   Expanded(
                     child: GridView.count(
