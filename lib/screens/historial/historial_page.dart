@@ -33,17 +33,127 @@ class _HistorialPageState
       *,
       maquinas(nombre)
     ''')
+    .eq('eliminado', false)
+    .limit(100)
     .order(
       'fecha_hora',
       ascending: false,
-    )
-    .limit(100);
+    );
+    
 
     setState(() {
       registros = data;
       cargando = false;
     });
   }
+
+  Future<void> confirmarEliminar(
+  int registroId,
+) async {
+
+  final confirmar =
+      await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text(
+          'Eliminar registro',
+        ),
+
+        content: const Text(
+          '¿Está seguro de eliminar este registro?\n\nEsta acción no se puede deshacer.',
+        ),
+
+        actions: [
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                false,
+              );
+            },
+            child: const Text(
+              'Cancelar',
+            ),
+          ),
+
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  Colors.red,
+            ),
+
+            onPressed: () {
+              Navigator.pop(
+                context,
+                true,
+              );
+            },
+
+            child: const Text(
+              'Eliminar',
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (confirmar == true) {
+    eliminarRegistro(
+      registroId,
+    );
+  }
+}
+
+Future<void> eliminarRegistro(
+  int registroId,
+) async {
+
+  try {
+
+    await supabase
+        .from('registro_detalle')
+        .delete()
+        .eq(
+          'registro_id',
+          registroId,
+        );
+
+    await supabase
+        .from('registros')
+        .delete()
+        .eq(
+          'id',
+          registroId,
+        );
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Registro eliminado',
+        ),
+      ),
+    );
+
+    cargarRegistros();
+
+  } catch (e) {
+
+    ScaffoldMessenger.of(context)
+        .showSnackBar(
+      SnackBar(
+        content: Text(
+          'Error: $e',
+        ),
+      ),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -106,8 +216,15 @@ class _HistorialPageState
                         '\nFecha: ${registro['fecha']}',
                       ),
 
-                    trailing: const Icon(
-                      Icons.chevron_right,
+                    trailing: IconButton(icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                    ),
+                    onPressed: (){
+                      confirmarEliminar(
+                        registro['id'],
+                      );
+                    }
                     ),
                   ),
                 );
