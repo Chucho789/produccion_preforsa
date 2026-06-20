@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:produccion_preforsa/screens/registro/menu_secciones_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'ips/ips_menu_page.dart';
-import 'menu_secciones_page.dart';
+
 
 
 class RegistroPage extends StatefulWidget {
@@ -195,7 +195,7 @@ class _RegistroPageState extends State<RegistroPage> {
                             ],
                           ),
                         ),
-                      ),
+                      ),          
 
                       if (seleccionada)
                         const Positioned(
@@ -203,7 +203,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           top: 10,
                           child: Icon(
                             Icons.check_circle,
-                            color: Colors.white,
+                            color: Color.fromARGB(255, 137, 189, 114),
                             size:40,
                           ),
                         ),
