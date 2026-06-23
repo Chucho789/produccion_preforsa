@@ -92,6 +92,51 @@ class AppTheme {
 static ThemeData darkTheme = ThemeData(
   useMaterial3: true,
 
+  inputDecorationTheme: InputDecorationTheme(
+  filled: true,
+  fillColor: const Color(0xFF2A2A2A),
+
+  contentPadding: const EdgeInsets.symmetric(
+    horizontal: 16,
+    vertical: 14,
+  ),
+
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: const BorderSide(
+      color: Colors.grey,
+    ),
+  ),
+
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: const BorderSide(
+      color: Colors.grey,
+    ),
+  ),
+
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: const BorderSide(
+      color: AppColors.primaryOrange,
+      width: 2,
+    ),
+  ),
+
+  hintStyle: const TextStyle(
+    color: Colors.white70,
+  ),
+),
+
+textTheme: const TextTheme(
+  bodyLarge: TextStyle(
+    color: Colors.white,
+  ),
+  bodyMedium: TextStyle(
+    color: Colors.white,
+  ),
+),
+
   colorScheme: const ColorScheme.dark(
     primary: Color(0xFFFF7A00),
     secondary: Color(0xFF1E5EFF),

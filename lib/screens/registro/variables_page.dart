@@ -241,28 +241,41 @@ class _VariablesPageState extends State<VariablesPage> {
 }
 
 Color obtenerColorTarjeta(
+  BuildContext context,
   String texto,
   double min,
   double max,
 ) {
+  final esOscuro =
+      Theme.of(context).brightness ==
+      Brightness.dark;
+
+  final colorBase = esOscuro
+      ? const Color(0xFF2A2A2A)
+      : Colors.white;
+
   if (texto.isEmpty) {
-    return Colors.white;
+    return colorBase;
   }
 
   final valor = double.tryParse(texto);
 
   if (valor == null) {
-    return Colors.white;
+    return colorBase;
   }
 
   if (valor < min || valor > max) {
-    return Colors.red.shade200;
+    return esOscuro
+        ? const Color(0xFF5A1F1F)
+        : Colors.red.shade200;
   }
 
   final rango = max - min;
 
   if (rango <= 0) {
-    return Colors.green.shade200;
+    return esOscuro
+        ? const Color(0xFF1F4A2A)
+        : Colors.green.shade200;
   }
 
   final zonaAmarilla = rango * 0.10;
@@ -270,10 +283,14 @@ Color obtenerColorTarjeta(
   if (
       valor <= min + zonaAmarilla ||
       valor >= max - zonaAmarilla) {
-    return Colors.yellow.shade200;
+    return esOscuro
+        ? const Color(0xFF665500)
+        : Colors.yellow.shade200;
   }
 
-  return Colors.green.shade200;
+  return esOscuro
+      ? const Color(0xFF1F4A2A)
+      : Colors.green.shade200;
 }
   List<Widget> construirSecciones() {
   final Map<String, List<dynamic>> secciones = {};
@@ -358,6 +375,7 @@ if (subsecciones.isEmpty) {
 
               decoration: BoxDecoration(
                 color: obtenerColorTarjeta(
+                  context,
                   controller.text,
                   min,
                   max,
@@ -421,7 +439,7 @@ if (subsecciones.isEmpty) {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: Colors.black54,
+                              color: Color.fromARGB(134, 63, 207, 6),
                             ),
                           ),
                         ),
@@ -504,6 +522,7 @@ subgrupo.value.sort(
 
                     decoration: BoxDecoration(
                         color: obtenerColorTarjeta(
+                          context,
                           controller.text,
                           min,
                           max,
@@ -544,27 +563,26 @@ subgrupo.value.sort(
 
 
                           TextFormField(
-                              controller: controller,
-                              textAlign: TextAlign.center,
-                              keyboardType:
-                                const TextInputType.numberWithOptions(
-                              decimal: true,
-                                ),
-                              onChanged: (_) {
-                                actualizar(() {});
-                              },
-                              decoration: InputDecoration(
-                                border: const OutlineInputBorder(),
-
-                                suffixText: variable['unidad'],
-
-                                suffixStyle: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                  color: Color.fromARGB(255, 163, 156, 156),
-                                ),
-                              ),
-                            ),
+  controller: controller,
+  textAlign: TextAlign.center,
+  keyboardType: const TextInputType.numberWithOptions(
+    decimal: true,
+  ),
+  style: const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+  ),
+  onChanged: (_) {
+    actualizar(() {});
+  },
+  decoration: InputDecoration(
+    suffixText: variable['unidad'],
+    suffixStyle: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 14,
+    ),
+  ),
+)
                       ],
                     ),
                   );

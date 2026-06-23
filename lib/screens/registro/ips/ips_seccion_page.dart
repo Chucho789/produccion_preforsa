@@ -233,27 +233,28 @@ Future<void> guardarDatos() async {
 }
 
 Color obtenerColor(
-TextEditingController controller,
-double min,
-double max,
+  BuildContext context,
+  TextEditingController controller,
+  double min,
+  double max,
 ) {
-if (controller.text.isEmpty) {
-return Colors.white;
-}
-final valor = double.tryParse(
-  controller.text.replaceAll(',', '.'),
-);
+  if (controller.text.isEmpty) {
+    return Theme.of(context).cardColor;
+  }
 
-if (valor == null) {
-  return Colors.white;
-}
+  final valor = double.tryParse(
+    controller.text.replaceAll(',', '.'),
+  );
 
-if (valor >= min && valor <= max) {
-  return Colors.green.shade100;
-}
+  if (valor == null) {
+    return Theme.of(context).cardColor;
+  }
 
-return Colors.red.shade100;
+  if (valor >= min && valor <= max) {
+    return Colors.green.shade100;
+  }
 
+  return Colors.red.shade100;
 }
 
 List<Widget> construirSecciones() {
@@ -290,6 +291,7 @@ List<Widget> construirSecciones() {
 
             return Card(
               color: obtenerColor(
+                context,
                 controller,
                 (variable['valor_min'] ?? 0)
                     .toDouble(),
@@ -308,13 +310,12 @@ List<Widget> construirSecciones() {
                   children: [
 
                     Text(
-                      variable[
-                          'variable_nombre'],
-
-                      style:
-                          const TextStyle(
-                        fontWeight:
-                            FontWeight.bold,
+                      variable['variable_nombre'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface,
                       ),
                     ),
 
@@ -323,6 +324,11 @@ List<Widget> construirSecciones() {
                     ),
 
                     TextField(
+                      style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface,
+                        ),
                       controller:
                           controller,
 
