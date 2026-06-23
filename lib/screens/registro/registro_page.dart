@@ -104,27 +104,82 @@ class _RegistroPageState extends State<RegistroPage> {
         child: Column(
           children: [
             Card(
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  children: [
-                    Text(
-                      turno,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      DateTime.now().toString().substring(0, 10),
-                    ),
-                  ],
-                ),
+  color: const Color(0xFF202020),
+  elevation: 8,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(20),
+  ),
+  child: Container(
+    width: double.infinity,
+    height: 90,
+    padding: const EdgeInsets.all(10),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.access_time_filled,
+              color: const Color.fromARGB(255, 26, 170, 26),
+              size: 30,
+            ),
+            const SizedBox(width: 10),
+            Text(
+              turno,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ],
+        ),
+        const Divider(
+          color: Colors.white24,
+        ),
+        Text(
+          DateTime.now().toString().substring(0, 10),
+          style: const TextStyle(
+            color: Colors.white70,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+            const SizedBox(height: 25),
+const Row(
+              children: [
+                Expanded(
+                  child: Divider(
+                    color: Colors.orange,
+                    thickness: 1.5,
+                  ),
+                ),
 
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                  ),
+                  child: Text(
+                    'LÍNEAS DE PRODUCCIÓN',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: Divider(
+                    color: Colors.orange,
+                    thickness: 1.5,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 25),
 
             GridView.builder(
@@ -185,7 +240,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 30,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                             shadows: [
                               Shadow(
@@ -204,7 +259,7 @@ class _RegistroPageState extends State<RegistroPage> {
                           child: Icon(
                             Icons.check_circle,
                             color: Color.fromARGB(255, 137, 189, 114),
-                            size:40,
+                            size:35,
                           ),
                         ),
                     ],
@@ -214,13 +269,14 @@ class _RegistroPageState extends State<RegistroPage> {
               },
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 5),
 
             const Row(
               children: [
                 Expanded(
                   child: Divider(
                     thickness: 1.5,
+                    color: Colors.orange,
                   ),
                 ),
 
@@ -233,7 +289,7 @@ class _RegistroPageState extends State<RegistroPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey,
+                      color: Colors.orange,
                       letterSpacing: 1,
                     ),
                   ),
@@ -242,12 +298,13 @@ class _RegistroPageState extends State<RegistroPage> {
                 Expanded(
                   child: Divider(
                     thickness: 1.5,
+                    color: Colors.orange,
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 25),
 
             if (maquinas.isNotEmpty)
   Expanded(

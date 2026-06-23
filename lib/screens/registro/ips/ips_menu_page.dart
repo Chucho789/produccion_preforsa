@@ -76,61 +76,80 @@ class IpsMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _modulo(
-    BuildContext context,
-    String titulo,
-    IconData icono,
-  ) {
-    return Card(
-      elevation: 6,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+Widget _modulo(
+  BuildContext context,
+  String titulo,
+  IconData icono,
+) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(20),
 
-                  onTap: () {
+    onTap: () {
 
-                    String seccion = titulo;
+      String seccion = titulo;
 
-                    if (titulo == "Ciclo") {
-                      seccion = "Ciclo Estándar";
-                    }
+      if (titulo == "Ciclo") {
+        seccion = "Ciclo Estándar";
+      }
 
-                    if (titulo == "Tornillo") {
-                      seccion = "Tornillo";
-                    }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IpsSeccionPage(
+            maquinaId: maquinaId,
+            maquinaNombre: maquinaNombre,
+            seccion: seccion,
+          ),
+        ),
+      );
+    },
 
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => IpsSeccionPage(
-                          maquinaId: maquinaId,
-                          maquinaNombre: maquinaNombre,
-                          seccion: seccion,
-                        ),
-                      ),
-                    );
-                  },
+    child: Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+
+        borderRadius: BorderRadius.circular(20),
+
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(255, 102, 87, 87).withOpacity(0.50),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+
+      child: Padding(
+        padding: const EdgeInsets.all(12),
 
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+
           children: [
+
             Icon(
               icono,
-              size: 50,
+              size: 55,
+              color: Theme.of(context)
+                  .colorScheme
+                  .primary,
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 20),
 
             Text(
               titulo,
               textAlign: TextAlign.center,
+
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

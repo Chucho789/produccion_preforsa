@@ -67,6 +67,31 @@ class _MenuSeccionesPageState
       case 'TEMPERATURA DISTRIBUIDOR':
         return Icons.thermostat;
 
+      case 'MODALIDAD AUTOMATICO':
+        return Icons.timeline;  
+
+      case 'CABEZALES DE TINTA':
+        return Icons.local_drink;
+      
+      case 'CALEFACTORES MÁQUINA':
+        return Icons.whatshot;
+
+      case 'MOLDE':
+        return Icons.precision_manufacturing;
+
+      case 'MOLDEADO':
+        return Icons.auto_fix_high;
+
+      case 'SISTEMA HIDRÁULICO':
+        return Icons.water_drop;
+
+      case 'ENFRIADOR DE AGUA':
+        return Icons.ac_unit;
+
+      case 'CUCHILLA DE CORTE':
+        return Icons.content_cut;
+
+      
       default:
         return Icons.settings;
     }
@@ -121,8 +146,22 @@ class _MenuSeccionesPageState
                     );
                   },
 
-                  child: Card(
-                    elevation: 5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+
+                      borderRadius: BorderRadius.circular(20),
+
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(255,102,87,87,).withOpacity(0.50),
+
+                          blurRadius: 8,
+
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
 
                     child: Column(
                       mainAxisAlignment:
@@ -131,23 +170,22 @@ class _MenuSeccionesPageState
                       children: [
 
                         Icon(
-                          obtenerIcono(
-                              seccion),
-                          size: 50,
+                          obtenerIcono(seccion),
+                          size: 55,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary,
                         ),
 
-                        const SizedBox(
-                            height: 10),
+                        const SizedBox(height: 20),
 
                         Text(
                           seccion,
-                          textAlign:
-                              TextAlign.center,
+                          textAlign: TextAlign.center,
 
-                          style:
-                              const TextStyle(
-                            fontWeight:
-                                FontWeight.bold,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],

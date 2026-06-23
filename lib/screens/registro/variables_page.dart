@@ -353,6 +353,8 @@ if (subsecciones.isEmpty) {
     Padding(
       padding: const EdgeInsets.all(6),
       child: Wrap(
+        alignment: WrapAlignment.center,
+        runAlignment: WrapAlignment.center,
         spacing: 10,
         runSpacing: 10,
         children: variablesSeccion.map((variable) {
@@ -416,9 +418,11 @@ if (subsecciones.isEmpty) {
                         controller: controller,
                         textAlign: TextAlign.center,
                         keyboardType:
-                            const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
+                          variable['tipo'] == 'texto'
+                              ? TextInputType.text
+                              : const TextInputType.numberWithOptions(
+                                  decimal: true,
+                                ),
                         onChanged: (_) {
                             setState(() {});
                           },
@@ -616,7 +620,10 @@ subgrupo.value.sort(
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          ...construirSecciones(),
+          if (widget.seccion != null)
+            ...construirSubsecciones(variables)
+            else
+              ...construirSecciones(),
 
 
           const SizedBox(height: 20),
