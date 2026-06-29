@@ -27,6 +27,9 @@ class _MenuSeccionesPageState
 
   bool cargando = true;
 
+  final Map<String, dynamic> valoresRegistro = {};
+  final Set<String> seccionesCompletadas = {};
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +53,142 @@ class _MenuSeccionesPageState
       cargando = false;
     });
   }
+
+  int obtenerTurnoNumero() {
+
+  final hora = DateTime.now().hour;
+
+  if (hora >= 7 && hora < 15) {
+    return 1;
+  }
+
+  if (hora >= 15 && hora < 23) {
+    return 2;
+  }
+
+  return 3;
+}
+
+Future<void> guardarRegistroCompleto() async {
+
+  if (seccionesCompletadas.length != secciones.length) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Debe registrar todas las secciones antes de guardar.',
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  try {
+
+    final usuario = supabase.auth.currentUser;
+
+    if (usuario == null) return;
+
+    String nombreUsuario = "Operador";
+
+    final perfil = await supabase
+        .from('perfiles')
+        .select('nombre')
+        .eq('id', usuario.id)
+        .maybeSingle();
+
+    if (perfil != null) {
+      nombreUsuario = perfil['nombre'];
+    }
+
+  final registro = await supabase
+    .from('registros')
+    .insert({
+
+      'fecha': DateTime.now()
+          .toIso8601String()
+          .substring(0, 10),
+
+      'turno': obtenerTurnoNumero(),
+
+      'maquina_id': widget.maquinaId,
+
+      'usuario_id': usuario.id,
+
+      'creado_por': nombreUsuario,
+
+      'fecha_hora': DateTime.now()
+          .toIso8601String(),
+
+    })
+    .select()
+    .single();
+
+final registroId = registro['id'];
+
+for (final seccion in valoresRegistro.values) {
+
+  final listaVariables = seccion['variables'];
+
+  for (final variable in listaVariables) {
+
+    final texto = variable['valor'].toString().trim();
+
+    if (texto == "-") {
+
+      await supabase
+          .from('registro_detalle')
+          .insert({
+
+        'registro_id': registroId,
+
+        'variable_id': variable['variable_id'],
+
+        'valor_texto': '-',
+
+      });
+
+    } else {
+
+      final numero = double.tryParse(
+        texto.replaceAll(',', '.'),
+      );
+
+      await supabase
+          .from('registro_detalle')
+          .insert({
+
+        'registro_id': registroId,
+
+        'variable_id': variable['variable_id'],
+
+        'valor': numero,
+
+      });
+
+    }
+  }
+
+  if (!mounted) return;
+
+ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(
+    content: Text(
+      'Registro guardado correctamente.',
+    ),
+  ),
+);
+
+Navigator.pop(context);
+}
+
+  } catch (e) {
+
+    debugPrint(e.toString());
+
+  }
+}
 
   IconData obtenerIcono(String seccion) {
 
@@ -106,10 +245,15 @@ class _MenuSeccionesPageState
       ),
 
       body: cargando
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : GridView.builder(
+    ? const Center(
+        child: CircularProgressIndicator(),
+      )
+    : Column(
+        children: [
+
+          Expanded(
+            child: GridView.builder(
+
               padding: const EdgeInsets.all(16),
 
               itemCount: secciones.length,
@@ -124,76 +268,145 @@ class _MenuSeccionesPageState
 
               itemBuilder: (context, index) {
 
-                final seccion =
-                    secciones[index];
+                final seccion = secciones[index];
 
                 return InkWell(
-                  onTap: () {
 
-                    Navigator.push(
+                  onTap: () async {
+
+                    final resultado = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) =>
-                            VariablesPage(
-                          maquinaId:
-                              widget.maquinaId,
-                          maquinaNombre:
-                              widget.maquinaNombre,
-                          seccion:
-                              seccion,
+                        builder: (_) => VariablesPage(
+                          maquinaId: widget.maquinaId,
+                          maquinaNombre: widget.maquinaNombre,
+                          seccion: seccion,
+                          valoresRegistro: valoresRegistro,
                         ),
                       ),
                     );
+
+                    if (resultado != null) {
+
+                      valoresRegistro[seccion] = resultado;
+
+                      setState(() {
+
+                        seccionesCompletadas.add(seccion);
+
+                      });
+
+                    }
+
                   },
 
                   child: Container(
+
                     decoration: BoxDecoration(
+
                       color: Theme.of(context).cardColor,
 
                       borderRadius: BorderRadius.circular(20),
 
                       boxShadow: [
+
                         BoxShadow(
-                          color: const Color.fromARGB(255,102,87,87,).withOpacity(0.50),
+                          color: const Color.fromARGB(
+                            255,
+                            102,
+                            87,
+                            87,
+                          ).withOpacity(0.50),
 
                           blurRadius: 8,
 
                           offset: const Offset(0, 4),
                         ),
+
                       ],
+
                     ),
 
                     child: Column(
+
                       mainAxisAlignment:
                           MainAxisAlignment.center,
 
                       children: [
 
                         Icon(
-                          obtenerIcono(seccion),
+
+                          seccionesCompletadas.contains(seccion)
+                              ? Icons.check_circle
+                              : obtenerIcono(seccion),
+
                           size: 55,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary,
+
+                          color:
+                              seccionesCompletadas.contains(seccion)
+                                  ? Colors.green
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+
                         ),
 
                         const SizedBox(height: 20),
 
                         Text(
+
                           seccion,
+
                           textAlign: TextAlign.center,
 
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
+
                         ),
+
                       ],
+
                     ),
+
                   ),
+
                 );
+
               },
+
             ),
+          ),
+
+          Padding(
+
+            padding: const EdgeInsets.all(16),
+
+            child: SizedBox(
+
+              width: double.infinity,
+
+              height: 55,
+
+              child: ElevatedButton.icon(
+
+                onPressed: guardarRegistroCompleto,
+
+                icon: const Icon(Icons.save),
+
+                label: const Text(
+                  "Guardar Registro",
+                ),
+
+              ),
+
+            ),
+
+          ),
+
+        ],
+      ),
     );
   }
 }

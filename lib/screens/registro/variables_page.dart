@@ -5,11 +5,15 @@ class VariablesPage extends StatefulWidget {
   final int maquinaId;
   final String maquinaNombre;
   final String? seccion;
+
+  final Map<String, dynamic> valoresRegistro;
+
   const VariablesPage({
     super.key,
     required this.maquinaId,
     required this.maquinaNombre,
-    this.seccion,ca
+    this.seccion,
+    required this.valoresRegistro,
   });
 
   @override
@@ -58,8 +62,11 @@ class _VariablesPageState extends State<VariablesPage> {
         for (final v in data) {
         }
       for (var variable in data) {
-        controllers[variable['variable_id']] =
-            TextEditingController();
+        final id = variable['variable_id'];
+
+        controllers[id] = TextEditingController(
+          text: widget.valoresRegistro[id]?.toString() ?? '',
+        );
       }
       setState(() {
         variables = data;
@@ -83,6 +90,27 @@ class _VariablesPageState extends State<VariablesPage> {
     }
     return 3;
   }
+
+  bool validarSeccionCompleta() {
+
+  for (final variable in variables) {
+
+    final variableId = variable['variable_id'];
+
+    final controller = controllers[variableId];
+
+    if (controller == null) continue;
+
+    final texto = controller.text.trim();
+
+    if (texto.isEmpty) {
+      return false;
+    }
+
+  }
+
+  return true;
+}
 
  Future<void> guardarRegistro() async {
 
@@ -423,9 +451,12 @@ if (subsecciones.isEmpty) {
                               : const TextInputType.numberWithOptions(
                                   decimal: true,
                                 ),
-                        onChanged: (_) {
-                            setState(() {});
-                          },
+                        onChanged: (valor) {
+
+                          widget.valoresRegistro[variableId] = valor;
+
+                          setState(() {});
+                        },
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           contentPadding: EdgeInsets.symmetric(
@@ -576,9 +607,12 @@ subgrupo.value.sort(
     fontSize: 16,
     fontWeight: FontWeight.w500,
   ),
-  onChanged: (_) {
-    actualizar(() {});
-  },
+  onChanged: (valor) {
+
+  widget.valoresRegistro[variableId] = valor;
+
+  actualizar(() {});
+},
   decoration: InputDecoration(
     suffixText: variable['unidad'],
     suffixStyle: const TextStyle(
@@ -629,18 +663,48 @@ subgrupo.value.sort(
           const SizedBox(height: 20),
 
           SizedBox(
-            height: 55,
-            child: ElevatedButton.icon(
-              onPressed:
-                  guardando ? null : guardarRegistro,
-              icon: const Icon(Icons.save),
-              label: Text(
-                guardando
-                    ? 'Guardando...'
-                    : 'Guardar Registro',
+              height: 55,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.check_circle),
+                label: const Text("Sección registrada"),
+                onPressed: () {
+
+  if (!validarSeccionCompleta()) {
+
+    ScaffoldMessenger.of(context).showSnackBar(
+
+      const SnackBar(
+
+        content: Text(
+          'Debe completar todas las variables antes de registrar la sección.',
+        ),
+
+        backgroundColor: Colors.red,
+
+      ),
+
+    );
+
+    return;
+  }
+
+  Navigator.pop(context, {
+  "seccion": widget.seccion,
+  "variables": variables.map((variable) {
+
+    final id = variable['variable_id'];
+
+    return {
+      "variable_id": id,
+      "valor": controllers[id]!.text.trim(),
+    };
+
+  }).toList(),
+});
+
+},
               ),
             ),
-          ),
 
           const SizedBox(height: 20),
         ],
