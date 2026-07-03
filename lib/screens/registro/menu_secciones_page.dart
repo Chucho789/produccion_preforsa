@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'variables_page.dart';
 
 class MenuSeccionesPage extends StatefulWidget {
+
   final int maquinaId;
   final String maquinaNombre;
 
@@ -23,12 +24,22 @@ class _MenuSeccionesPageState
 
   final supabase = Supabase.instance.client;
 
-  List<String> secciones = [];
-
   bool cargando = true;
 
-  final Map<String, dynamic> valoresRegistro = {};
-  final Set<String> seccionesCompletadas = {};
+  List<String> secciones = [];
+
+  /// Aquí SOLO guardaremos una sección completa.
+  ///
+  /// Ejemplo:
+  ///
+  /// {
+  ///   "Presiones": {...},
+  ///   "Molde": {...},
+  ///   "Datos Generales": {...}
+  /// }
+
+  final Map<String, Map<String, dynamic>>
+      registrosPorSeccion = {};
 
   @override
   void initState() {
@@ -43,45 +54,94 @@ class _MenuSeccionesPageState
         .select('seccion')
         .eq('maquina_id', widget.maquinaId);
 
-    final lista =
-        data.map((e) => e['seccion'].toString())
-            .toSet()
-            .toList();
+    secciones = data
+        .map((e) => e['seccion'].toString())
+        .toSet()
+        .toList();
 
     setState(() {
-      secciones = lista;
+
       cargando = false;
+
     });
+
   }
 
   int obtenerTurnoNumero() {
 
-  final hora = DateTime.now().hour;
+    final hora = DateTime.now().hour;
 
-  if (hora >= 7 && hora < 15) {
-    return 1;
+    if (hora >= 7 && hora < 15) {
+      return 1;
+    }
+
+    if (hora >= 15 && hora < 23) {
+      return 2;
+    }
+
+    return 3;
+
   }
 
-  if (hora >= 15 && hora < 23) {
-    return 2;
+  bool get registroCompleto {
+
+    return registrosPorSeccion.length ==
+        secciones.length;
+
   }
 
-  return 3;
-}
+  Future<void> abrirSeccion(
+      String seccion) async {
 
-Future<void> guardarRegistroCompleto() async {
+    final resultado = await Navigator.push(
 
-  if (seccionesCompletadas.length != secciones.length) {
+      context,
+
+      MaterialPageRoute(
+
+        builder: (_) => VariablesPage(
+
+          maquinaId: widget.maquinaId,
+
+          maquinaNombre:
+              widget.maquinaNombre,
+
+          seccion: seccion,
+
+        ),
+
+      ),
+
+    );
+
+    if (resultado == null) return;
+
+    registrosPorSeccion[seccion] =
+
+        Map<String, dynamic>.from(resultado);
+
+    setState(() {});
+  }
+  Future<void> guardarRegistroCompleto() async {
+
+  if (!registroCompleto) {
 
     ScaffoldMessenger.of(context).showSnackBar(
+
       const SnackBar(
+
         content: Text(
-          'Debe registrar todas las secciones antes de guardar.',
+          "Debe registrar todas las secciones.",
         ),
+
+        backgroundColor: Colors.red,
+
       ),
+
     );
 
     return;
+
   }
 
   try {
@@ -93,311 +153,389 @@ Future<void> guardarRegistroCompleto() async {
     String nombreUsuario = "Operador";
 
     final perfil = await supabase
-        .from('perfiles')
-        .select('nombre')
-        .eq('id', usuario.id)
+        .from("perfiles")
+        .select("nombre")
+        .eq("id", usuario.id)
         .maybeSingle();
 
     if (perfil != null) {
-      nombreUsuario = perfil['nombre'];
+
+      nombreUsuario = perfil["nombre"];
+
     }
 
-  final registro = await supabase
-    .from('registros')
-    .insert({
+    //------------------------------------------
+    // CREA EL REGISTRO PRINCIPAL
+    //------------------------------------------
 
-      'fecha': DateTime.now()
+    final registro = await supabase
+        .from("registros")
+        .insert({
+
+      "fecha": DateTime.now()
           .toIso8601String()
-          .substring(0, 10),
+          .substring(0,10),
 
-      'turno': obtenerTurnoNumero(),
+      "turno": obtenerTurnoNumero(),
 
-      'maquina_id': widget.maquinaId,
+      "maquina_id": widget.maquinaId,
 
-      'usuario_id': usuario.id,
+      "usuario_id": usuario.id,
 
-      'creado_por': nombreUsuario,
+      "creado_por": nombreUsuario,
 
-      'fecha_hora': DateTime.now()
-          .toIso8601String(),
+      "fecha_hora":
+          DateTime.now().toIso8601String(),
 
     })
-    .select()
-    .single();
+        .select()
+        .single();
 
-final registroId = registro['id'];
+    final registroId = registro["id"];
 
-for (final seccion in valoresRegistro.values) {
+    //------------------------------------------
+    // RECORRER TODAS LAS SECCIONES
+    //------------------------------------------
 
-  final listaVariables = seccion['variables'];
+    for (final seccion
+        in registrosPorSeccion.values) {
 
-  for (final variable in listaVariables) {
+      final variables =
+          List<Map<String,dynamic>>.from(
 
-    final texto = variable['valor'].toString().trim();
+        seccion["variables"],
 
-    if (texto == "-") {
-
-      await supabase
-          .from('registro_detalle')
-          .insert({
-
-        'registro_id': registroId,
-
-        'variable_id': variable['variable_id'],
-
-        'valor_texto': '-',
-
-      });
-
-    } else {
-
-      final numero = double.tryParse(
-        texto.replaceAll(',', '.'),
       );
 
-      await supabase
-          .from('registro_detalle')
-          .insert({
+      //------------------------------------------
+      // RECORRER VARIABLES
+      //------------------------------------------
 
-        'registro_id': registroId,
+      for (final variable in variables) {
 
-        'variable_id': variable['variable_id'],
+        final texto =
+            variable["valor"]
+                .toString()
+                .trim();
 
-        'valor': numero,
+        if (texto == "-") {
 
-      });
+          await supabase
+              .from("registro_detalle")
+              .insert({
+
+            "registro_id": registroId,
+
+            "variable_id":
+                variable["variable_id"],
+
+            "valor_texto": "-",
+
+          });
+
+        } else {
+
+          final numero =
+              double.tryParse(
+
+            texto.replaceAll(",", "."),
+
+          );
+
+          await supabase
+              .from("registro_detalle")
+              .insert({
+
+            "registro_id": registroId,
+
+            "variable_id":
+                variable["variable_id"],
+
+            "valor": numero,
+
+          });
+
+        }
+
+      }
 
     }
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+
+      const SnackBar(
+
+        content: Text(
+          "Registro guardado correctamente.",
+        ),
+
+        backgroundColor: Colors.green,
+
+      ),
+
+    );
+
+    Navigator.pop(context);
+
   }
 
-  if (!mounted) return;
-
-ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(
-    content: Text(
-      'Registro guardado correctamente.',
-    ),
-  ),
-);
-
-Navigator.pop(context);
-}
-
-  } catch (e) {
+  catch(e){
 
     debugPrint(e.toString());
 
-  }
-}
+    ScaffoldMessenger.of(context).showSnackBar(
 
-  IconData obtenerIcono(String seccion) {
+      SnackBar(
 
-    switch (seccion.toUpperCase()) {
+        content: Text(e.toString()),
 
-      case 'PRESIONES':
-        return Icons.speed;
+        backgroundColor: Colors.red,
 
-      case 'ENFRIADOR DE LÁMPARAS':
-        return Icons.ac_unit;
-
-      case 'DIMENSIONES DE CABEZALES':
-        return Icons.straighten;
-
-      case 'TEMPERATURA DISTRIBUIDOR':
-        return Icons.thermostat;
-
-      case 'MODALIDAD AUTOMATICO':
-        return Icons.timeline;  
-
-      case 'CABEZALES DE TINTA':
-        return Icons.local_drink;
-      
-      case 'CALEFACTORES MÁQUINA':
-        return Icons.whatshot;
-
-      case 'MOLDE':
-        return Icons.precision_manufacturing;
-
-      case 'MOLDEADO':
-        return Icons.auto_fix_high;
-
-      case 'SISTEMA HIDRÁULICO':
-        return Icons.water_drop;
-
-      case 'ENFRIADOR DE AGUA':
-        return Icons.ac_unit;
-
-      case 'CUCHILLA DE CORTE':
-        return Icons.content_cut;
-
-      
-      default:
-        return Icons.settings;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.maquinaNombre),
       ),
 
-      body: cargando
-    ? const Center(
+    );
+
+  }
+
+}
+ IconData obtenerIcono(String seccion) {
+
+  switch (seccion.toUpperCase()) {
+
+    case 'PRESIONES':
+      return Icons.speed;
+
+    case 'ENFRIADOR DE LÁMPARAS':
+      return Icons.ac_unit;
+
+    case 'DIMENSIONES DE CABEZALES':
+      return Icons.straighten;
+
+    case 'TEMPERATURA DISTRIBUIDOR':
+      return Icons.thermostat;
+
+    case 'MODALIDAD AUTOMATICO':
+      return Icons.timeline;
+
+    case 'CABEZALES DE TINTA':
+      return Icons.local_drink;
+
+    case 'CALEFACTORES MÁQUINA':
+      return Icons.whatshot;
+
+    case 'MOLDE':
+      return Icons.precision_manufacturing;
+
+    case 'MOLDEADO':
+      return Icons.auto_fix_high;
+
+    case 'SISTEMA HIDRÁULICO':
+      return Icons.water_drop;
+
+    case 'ENFRIADOR DE AGUA':
+      return Icons.ac_unit;
+
+    case 'CUCHILLA DE CORTE':
+      return Icons.content_cut;
+
+    case "DATOS GENERALES":
+      return Icons.thermostat;
+            
+    case "CICLO ESTÁNDAR":
+      return  Icons.repeat;
+
+    case "FASES":
+      return Icons.timeline;
+                 
+    case "TEMPERATURAS TORNILLO":
+      return Icons.thermostat_auto_outlined;
+            
+    case "TORNILLO":
+      return Icons.device_thermostat;
+
+    case "INYECTOR":
+      return  Icons.speed;
+    case "HOT RUNNER":
+      return Icons.local_fire_department;
+    case "SECADOR":
+      return Icons.air;
+    default:
+      return Icons.settings;
+  }
+
+}
+
+@override
+Widget build(BuildContext context) {
+
+  if (cargando) {
+
+    return const Scaffold(
+
+      body: Center(
         child: CircularProgressIndicator(),
-      )
-    : Column(
-        children: [
+      ),
 
-          Expanded(
-            child: GridView.builder(
+    );
 
-              padding: const EdgeInsets.all(16),
+  }
 
-              itemCount: secciones.length,
+  return Scaffold(
 
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 15,
-                childAspectRatio: 1,
-              ),
+    appBar: AppBar(
 
-              itemBuilder: (context, index) {
+      title: Text(widget.maquinaNombre),
 
-                final seccion = secciones[index];
+    ),
 
-                return InkWell(
+    body: Column(
 
-                  onTap: () async {
+      children: [
 
-                    final resultado = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => VariablesPage(
-                          maquinaId: widget.maquinaId,
-                          maquinaNombre: widget.maquinaNombre,
-                          seccion: seccion,
-                          valoresRegistro: valoresRegistro,
-                        ),
-                      ),
-                    );
+        Expanded(
 
-                    if (resultado != null) {
-
-                      valoresRegistro[seccion] = resultado;
-
-                      setState(() {
-
-                        seccionesCompletadas.add(seccion);
-
-                      });
-
-                    }
-
-                  },
-
-                  child: Container(
-
-                    decoration: BoxDecoration(
-
-                      color: Theme.of(context).cardColor,
-
-                      borderRadius: BorderRadius.circular(20),
-
-                      boxShadow: [
-
-                        BoxShadow(
-                          color: const Color.fromARGB(
-                            255,
-                            102,
-                            87,
-                            87,
-                          ).withOpacity(0.50),
-
-                          blurRadius: 8,
-
-                          offset: const Offset(0, 4),
-                        ),
-
-                      ],
-
-                    ),
-
-                    child: Column(
-
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
-
-                      children: [
-
-                        Icon(
-
-                          seccionesCompletadas.contains(seccion)
-                              ? Icons.check_circle
-                              : obtenerIcono(seccion),
-
-                          size: 55,
-
-                          color:
-                              seccionesCompletadas.contains(seccion)
-                                  ? Colors.green
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .primary,
-
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Text(
-
-                          seccion,
-
-                          textAlign: TextAlign.center,
-
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-
-                        ),
-
-                      ],
-
-                    ),
-
-                  ),
-
-                );
-
-              },
-
-            ),
-          ),
-
-          Padding(
+          child: GridView.builder(
 
             padding: const EdgeInsets.all(16),
 
-            child: SizedBox(
+            itemCount: secciones.length,
 
-              width: double.infinity,
+            gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
 
-              height: 55,
+              crossAxisCount: 2,
 
-              child: ElevatedButton.icon(
+              crossAxisSpacing: 15,
 
-                onPressed: guardarRegistroCompleto,
+              mainAxisSpacing: 15,
 
-                icon: const Icon(Icons.save),
+              childAspectRatio: 1,
 
-                label: const Text(
-                  "Guardar Registro",
+            ),
+
+            itemBuilder: (context,index){
+
+              final seccion = secciones[index];
+
+              final registrada =
+                  registrosPorSeccion.containsKey(
+                      seccion);
+
+              return InkWell(
+
+                onTap: (){
+
+                  abrirSeccion(seccion);
+
+                },
+
+                child: Container(
+
+                  decoration: BoxDecoration(
+
+                    color: Theme.of(context).cardColor,
+
+                    borderRadius:
+                        BorderRadius.circular(20),
+
+                    boxShadow: [
+
+                      BoxShadow(
+
+                        color: Colors.black
+                            .withOpacity(.15),
+
+                        blurRadius: 8,
+
+                        offset: const Offset(0,4),
+
+                      ),
+
+                    ],
+
+                  ),
+
+                  child: Column(
+
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
+
+                    children: [
+
+                      Icon(
+
+                        registrada
+
+                            ? Icons.check_circle
+
+                            : obtenerIcono(seccion),
+
+                        size: 55,
+
+                        color: registrada
+
+                            ? Colors.green
+
+                            : Theme.of(context)
+                                .colorScheme
+                                .primary,
+
+                      ),
+
+                      const SizedBox(height:20),
+
+                      Text(
+
+                        seccion,
+
+                        textAlign: TextAlign.center,
+
+                        style: const TextStyle(
+
+                          fontWeight: FontWeight.bold,
+
+                          fontSize: 17,
+
+                        ),
+
+                      ),
+
+                    ],
+
+                  ),
+
                 ),
+
+              );
+
+            },
+
+          ),
+
+        ),
+
+        Padding(
+
+          padding: const EdgeInsets.all(16),
+
+          child: SizedBox(
+
+            width: double.infinity,
+
+            height: 55,
+
+            child: ElevatedButton.icon(
+
+              onPressed:
+                  guardarRegistroCompleto,
+
+              icon: const Icon(Icons.save),
+
+              label: const Text(
+
+                "Guardar Registro",
 
               ),
 
@@ -405,8 +543,13 @@ Navigator.pop(context);
 
           ),
 
-        ],
-      ),
-    );
-  }
+        ),
+
+      ],
+
+    ),
+
+  );
+
+}
 }

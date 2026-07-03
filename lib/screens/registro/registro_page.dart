@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:produccion_preforsa/screens/registro/menu_secciones_page.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'ips/ips_menu_page.dart';
-
-
 
 class RegistroPage extends StatefulWidget {
   const RegistroPage({super.key});
@@ -328,22 +325,10 @@ const Row(
               context,
               MaterialPageRoute(
                 builder: (_) {
-                    final nombre =
-                        maquina['nombre']
-                            .toString()
-                            .toUpperCase();
-                    if (nombre == 'IPS-1' ||
-                        nombre == 'IPS-2') {
-                      return IpsMenuPage(
-                        maquinaId: maquina['id'],
-                        maquinaNombre: maquina['nombre'],
-                      );
-                    }
-
-                        return MenuSeccionesPage(
-                          maquinaId: maquina['id'],
-                          maquinaNombre: maquina['nombre'],
-                        );
+                 return MenuSeccionesPage(
+  maquinaId: maquina['id'],
+  maquinaNombre: maquina['nombre'],
+);
                       },
               ),
             );
