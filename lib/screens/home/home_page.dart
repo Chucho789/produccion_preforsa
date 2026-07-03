@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:produccion_preforsa/screens/checklist/checklist_page.dart';
 import 'package:produccion_preforsa/screens/configuracion/configuracion_page.dart';
 import 'package:produccion_preforsa/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import '../graficos/graficos_page.dart';
 import '../reportes/reportes_page.dart';
 import '../admin/admin_page.dart';
 import '../login/login_page.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -275,6 +277,14 @@ appBar: AppBar(
                           icon: Icons.edit_note,
                           titulo: 'Registro',
                           pagina: const RegistroPage(),
+                          color: Colors.deepPurple,
+                        ),
+
+                        _menuCard(
+                          context,
+                          icon: Icons.fact_check,
+                          titulo: 'Checklist',
+                          pagina: const ChecklistPage(),
                           color: Colors.deepPurple,
                         ),
 

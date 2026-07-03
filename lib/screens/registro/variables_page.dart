@@ -6,11 +6,14 @@ class VariablesPage extends StatefulWidget {
   final String maquinaNombre;
   final String seccion;
 
+  final Map<String, dynamic>? datosSeccion;
+
   const VariablesPage({
     super.key,
     required this.maquinaId,
     required this.maquinaNombre,
     required this.seccion,
+    this.datosSeccion,
   });
 
   @override
@@ -56,10 +59,35 @@ class _VariablesPageState extends State<VariablesPage> {
 
       for (final variable in data) {
 
-        controllers[variable['variable_id']] =
-            TextEditingController();
+  String valorInicial = "";
 
-      }
+  if (widget.datosSeccion != null) {
+
+    final lista = List<Map<String, dynamic>>.from(
+      widget.datosSeccion!["variables"],
+    );
+
+    final encontrado = lista.firstWhere(
+
+      (v) => v["variable_id"] == variable["variable_id"],
+
+      orElse: () => <String, dynamic>{},
+
+    );
+
+    if (encontrado.isNotEmpty) {
+      valorInicial =
+          encontrado["valor"]?.toString() ?? "";
+    }
+
+  }
+
+  controllers[variable["variable_id"]] =
+      TextEditingController(
+    text: valorInicial,
+  );
+
+}
 
       setState(() {
 
