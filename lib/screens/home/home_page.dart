@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:produccion_preforsa/screens/checklist/checklist_page.dart';
+import 'package:produccion_preforsa/screens/checklist/checklist_menu_page.dart';
 import 'package:produccion_preforsa/screens/configuracion/configuracion_page.dart';
 import 'package:produccion_preforsa/theme/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -284,7 +284,7 @@ appBar: AppBar(
                           context,
                           icon: Icons.fact_check,
                           titulo: 'Checklist',
-                          pagina: const ChecklistPage(),
+                          pagina: const ChecklistMenuPage(),
                           color: Colors.deepPurple,
                         ),
 
