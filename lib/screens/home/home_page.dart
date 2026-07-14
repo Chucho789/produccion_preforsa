@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../historial/historial_page.dart';  
 import '../registro/registro_page.dart';
-import '../graficos/graficos_page.dart';
+import '../graficos/estado_maquina_page.dart';
 import '../reportes/reportes_page.dart';
 import '../admin/admin_page.dart';
 import '../login/login_page.dart';
@@ -275,7 +275,7 @@ appBar: AppBar(
                         _menuCard(
                           context,
                           icon: Icons.edit_note,
-                          titulo: 'Registro',
+                          titulo: 'P. Críticos',
                           pagina: const RegistroPage(),
                           color: Colors.deepPurple,
                         ),
@@ -291,7 +291,7 @@ appBar: AppBar(
                         _menuCard(
                           context,
                           icon: Icons.history,
-                          titulo: 'Historial',
+                          titulo: 'Historial P.C.',
                           pagina: const HistorialPage(),
                           color: Colors.deepPurple,
                         ),
@@ -299,8 +299,8 @@ appBar: AppBar(
                         _menuCard(
                           context,
                           icon: Icons.bar_chart,
-                          titulo: 'Gráficos',
-                          pagina: const GraficosPage(),
+                          titulo: 'E. Máquinas',
+                          pagina: const EstadoMaquinaPage(),
                           color: Colors.deepPurple,
                         ),
 

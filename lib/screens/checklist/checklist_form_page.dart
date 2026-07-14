@@ -253,12 +253,12 @@ if(cargando){
           ),
         ],
       ),
-      const SizedBox(height:8),
+      const SizedBox(height:5),
       ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: LinearProgressIndicator(
           value: progreso,
-          minHeight: 12,
+          minHeight: 6,
         ),
       ),
     ],
@@ -266,7 +266,7 @@ if(cargando){
 ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               itemCount: itemsMostrar.length,
               itemBuilder:(context,index){
                 final item = itemsMostrar[index];
@@ -275,47 +275,31 @@ if(cargando){
   return Padding(
 
     padding: const EdgeInsets.only(
-      top:20,
-      bottom:10,
+      top:5,
+      bottom:5,
     ),
 
     child: Container(
 
       padding: const EdgeInsets.symmetric(
-        vertical:10,
-        horizontal:15,
+        vertical:0,
+        horizontal:10,
       ),
-
       decoration: BoxDecoration(
-
-        color: Colors.deepPurple,
-
-        borderRadius: BorderRadius.circular(8),
-
+        color: const Color.fromARGB(255, 156, 149, 168),
+        borderRadius: BorderRadius.circular(5),
       ),
-
       child: Text(
-
         item["categoria"],
-
         style: const TextStyle(
-
           color: Colors.white,
-
           fontSize:18,
-
           fontWeight: FontWeight.bold,
-
           letterSpacing:1,
-
         ),
-
       ),
-
     ),
-
   );
-
 }
                 return Card(
                   margin: const EdgeInsets.only(bottom:8),
